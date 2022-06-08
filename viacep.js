@@ -1,24 +1,56 @@
-'use strict'
+'use strict';
 
-const cep = document.getElementById('cep')
-
-const pesquisarCep = async (cep) => {
-    const url = `https://viacep.com.br/ws/${cep}/json/`
-
-    const response = await fetch(url)
-
-    const data = await response.json()
-
-    return data
+const PreencherForm = (endereço) => {
+    
+    document.getElementById('endereco').value = endereço.logradouro
+    document.getElementById('bairro').value = endereço.bairro
+    document.getElementById('cidade').value = endereço.localidade
+    document.getElementById('estado').value = endereço.uf
 }
 
-const preencherformulario = async () => {
-    const endereco = await pesquisarCep(cep.value)
-    document.getElementById('endereco').value = endereco.logradouro
-    document.getElementById('bairro').value = endereco.bairro
-    document.getElementById('cidade').value = endereco.localidade
-    document.getElementById('estado').value = endereco.uf
+const Limparform = () => {
+    document.getElementById('endereco').value = null
+    document.getElementById('bairro').value = null
+    document.getElementById('cidade').value = null
+    document.getElementById('estado').value = null
 }
 
 
-cep.addEventListener('focusout' , preencherformulario)
+
+const CepValido = (cep) => {
+   if(cep.length == 8){
+       return true
+   }
+}
+
+
+const pesquisarCep = async() => {
+    //Função para limpar o formulario, limpa o formulario primeiro e so dps adiciona os valores nos lugares respectivos
+    Limparform();
+    const cep = document.getElementById('cep').value
+    const url = `http://viacep.com.br/ws/${cep}/json/`
+
+    //Tratamento de caracteres invalidos no campo de consulta da API
+    if(CepValido(cep)){
+        const promessa = await fetch(url)
+        const endereço = await promessa.json()
+    //Tratamento de consulta invalida a API    
+    if (endereço.hasOwnProperty('erro')){
+        document.getElementById('endereco').value = 'Cep invalido'
+        document.getElementById('bairro').value = 'Cep invalido'
+        document.getElementById('cidade').value = 'Cep invalido'
+        document.getElementById('estado').value = 'Cep invalido'
+    }else{
+    PreencherForm(endereço)
+    }
+
+    }else{
+        document.getElementById('endereco').value = 'Cep invalido'
+        document.getElementById('bairro').value = 'Cep invalido'
+        document.getElementById('cidade').value = 'Cep invalido'
+        document.getElementById('estado').value = 'Cep invalido'
+    }
+
+}
+
+document.getElementById('cep').addEventListener('focusout', pesquisarCep);
